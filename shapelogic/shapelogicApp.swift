@@ -8,10 +8,19 @@
 import SwiftUI
 
 @main
-struct shapelogicApp: App {
+struct setApp: App {
+    @UIApplicationDelegateAdaptor private var appDelegate: AppDelegate
+        
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            NavigationWrapper()
+                .preferredColorScheme(.none) // Allow system color scheme
         }
+    }
+}
+
+class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        DeviceAdaptation.isIPad ? .all : .portrait
     }
 }
