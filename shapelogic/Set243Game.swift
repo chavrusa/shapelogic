@@ -72,11 +72,17 @@ final class Set243Game: ObservableObject {
     }
     
     // Deal 3 cards from draw pile to table
+    // Deal 3 cards from draw pile to table, inserting them at random positions
     func dealThreeCards() {
         guard drawPile.count >= 3 else { return }
         let newCards = drawPile.suffix(3)
         drawPile.removeLast(3)
-        tableCards.append(contentsOf: newCards)
+        
+        // For each new card, insert it at a random position in tableCards
+        for card in newCards {
+            let randomIndex = Int.random(in: 0...tableCards.count)
+            tableCards.insert(card, at: randomIndex)
+        }
     }
     
     // Keep dealing until we have 12+ cards and at least one set
