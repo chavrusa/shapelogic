@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 
+/*
 // Custom shapes for the game
 struct Triangle: Shape {
     func path(in rect: CGRect) -> Path {
@@ -44,6 +45,52 @@ struct Rhombus: Shape {
         path.addLine(to: CGPoint(x: center.x - width/2, y: center.y))  // left
         path.closeSubpath()
         return path
+    }
+}
+ */
+
+struct StripedCircle: View {
+    let color: Color
+    
+    var body: some View {
+        Circle()
+            .stroke(color, lineWidth: 2)
+            .overlay(
+                GeometryReader { geometry in
+                    let size = min(geometry.size.width, geometry.size.height)
+                    let stripeCount = 6  // Number of stripes
+                    let stripeSpacing = size / CGFloat(stripeCount)
+                    
+                    Path { path in
+                        for i in 0...stripeCount {
+                            let y = CGFloat(i) * stripeSpacing
+                            path.move(to: CGPoint(x: 0, y: y))
+                            path.addLine(to: CGPoint(x: size, y: y))
+                        }
+                    }
+                    .stroke(color, lineWidth: 1)
+                    .clipShape(Circle().inset(by: 1)) // Inset to avoid edge artifacts
+                }
+            )
+    }
+}
+
+struct VerticalLineCircle: View {
+    let color: Color
+    
+    var body: some View {
+        Circle()
+            .stroke(color, lineWidth: 2)
+            .overlay(
+                GeometryReader { geometry in
+                    let size = min(geometry.size.width, geometry.size.height)
+                    Path { path in
+                        path.move(to: CGPoint(x: size/2, y: 0))  // Start just inside the circle
+                        path.addLine(to: CGPoint(x: size/2, y: size))  // End just inside the circle
+                    }
+                    .stroke(color, lineWidth: 2)
+                }
+            )
     }
 }
 
@@ -155,49 +202,51 @@ struct FourStateCardView: View {
                 Group {
                     switch card.number {
                     case 0: // Single shape in center
-                        singleShape
+                        circleVariant
                             .frame(width: shapeSize, height: shapeSize)
                     case 1: // Two shapes side by side
-                        HStack(spacing: shapeSize * 0.26) {
-                            singleShape
-                                .frame(width: shapeSize, height: shapeSize)
-                            singleShape
-                                .frame(width: shapeSize, height: shapeSize)
+                        HStack(spacing: containerSize * 0.12) {
+                            ForEach(0..<2) { _ in
+                                circleVariant
+                                    .frame(width: shapeSize, height: shapeSize)
+                            }
                         }
                     case 2: // Three shapes in diagonal
-                        /*ZStack {
+                        /* ZStack {
                             ForEach(0..<3) { index in
-                                singleShape
+                                circleVariant
                                     .frame(width: shapeSize, height: shapeSize)
                                     .offset(
-                                        x: CGFloat(index - 1) * containerSize * 0.28,
-                                        y: CGFloat(index - 1) * containerSize * 0.28
+                                        x: CGFloat(index - 1) * containerSize * 0.35,
+                                        y: CGFloat(index - 1) * containerSize * 0.35
                                     )
                             }
-                        }*/
-                        VStack(spacing: shapeSize * 0.05) {
-                            HStack(spacing: shapeSize * 0.22) {
-                                singleShape
-                                    .frame(width: shapeSize, height: shapeSize)
-                                singleShape
-                                    .frame(width: shapeSize, height: shapeSize)
+                        } */
+                        // Three shapes in a triangle
+                        VStack(spacing: shapeSize * 0.125) {
+                            circleVariant
+                                .frame(width: shapeSize, height: shapeSize)
+                            HStack(spacing: shapeSize * 0.3) {
+                                ForEach(0..<2) { _ in
+                                    circleVariant
+                                        .frame(width: shapeSize, height: shapeSize)
+                                }
                             }
-                                singleShape
-                                    .frame(width: shapeSize, height: shapeSize)
-                        }
+                         }
+
                     case 3: // Four shapes in square
-                        VStack(spacing: shapeSize * 0.22) {
-                            HStack(spacing: shapeSize * 0.22) {
-                                singleShape
-                                    .frame(width: shapeSize, height: shapeSize)
-                                singleShape
-                                    .frame(width: shapeSize, height: shapeSize)
+                        VStack(spacing: containerSize * 0.1) {
+                            HStack(spacing: containerSize * 0.1) {
+                                ForEach(0..<2) { _ in
+                                    circleVariant
+                                        .frame(width: shapeSize, height: shapeSize)
+                                }
                             }
-                            HStack(spacing: shapeSize * 0.22) {
-                                singleShape
-                                    .frame(width: shapeSize, height: shapeSize)
-                                singleShape
-                                    .frame(width: shapeSize, height: shapeSize)
+                            HStack(spacing: containerSize * 0.1) {
+                                ForEach(0..<2) { _ in
+                                    circleVariant
+                                        .frame(width: shapeSize, height: shapeSize)
+                                }
                             }
                         }
                     default:
@@ -210,15 +259,24 @@ struct FourStateCardView: View {
     }
     
     @ViewBuilder
-    private var singleShape: some View {
-        let shape = switch card.shape {
-        case 0: AnyShape(Circle())
-        case 1: AnyShape(Triangle())
-        case 2: AnyShape(RoundedSquare())
-        default: AnyShape(Rhombus())
-        }
+    private var circleVariant: some View {
+        let color = colors[card.color]
         
-        shape.fill(colors[card.color])
+        switch card.shape {
+        case 0:  // Filled circle
+            Circle()
+                .fill(color)
+        case 1:  // Outlined circle
+            Circle()
+                .stroke(color, lineWidth: 2)
+        case 2:  // Striped circle
+            StripedCircle(color: color)
+        default:  // Semi-transparent filled circle
+            VerticalLineCircle(color: color)
+            /*Circle()
+                .fill(color.opacity(0.5))
+                .stroke(color, lineWidth: 2)*/
+        }
     }
 }
 
