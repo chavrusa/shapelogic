@@ -22,12 +22,11 @@ final class ProjectiveSetGame: ObservableObject {
     @Published private(set) var drawPile: [ProjectiveCard]
     @Published private(set) var tableCards: [ProjectiveCard]
     @Published private(set) var selectedCards: Set<ProjectiveCard>
-    @Published private(set) var collectedSets: [[ProjectiveCard]]
     
     private let requiredTableCards = 7
     
     // Score is total number of cards collected, not number of sets
-    var score: Int { collectedSets.reduce(0) { $0 + $1.count } }
+    var score: Int { 81 - drawPile.count - tableCards.count }
     
     // Game is only over when we can't maintain table cards and no sets are possible
     var isGameOver: Bool { drawPile.isEmpty && tableCards.isEmpty }
@@ -36,7 +35,6 @@ final class ProjectiveSetGame: ObservableObject {
         drawPile = []
         tableCards = []
         selectedCards = []
-        collectedSets = []
         startNewGame()
     }
     
@@ -64,7 +62,6 @@ final class ProjectiveSetGame: ObservableObject {
     private func processSelectedSet() {
         let cards = Array(selectedCards)
         tableCards.removeAll { cards.contains($0) }
-        collectedSets.append(cards)
         
         // Try to maintain 7 cards if possible
         maintainTableCards()
@@ -94,7 +91,6 @@ final class ProjectiveSetGame: ObservableObject {
         drawPile = allCards.shuffled()
         tableCards = []
         selectedCards = []
-        collectedSets = []
         
         // Initial deal of exactly 7 cards
         for _ in 0..<requiredTableCards {

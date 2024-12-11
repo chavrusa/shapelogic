@@ -27,6 +27,9 @@ final class FourStateGame: ObservableObject {
         return cards
     }()
     
+    var score: Int { (64 - drawPile.count - onTable.count) / 4 }
+    var isGameOver: Bool { drawPile.count == 0 && !hasSet() }
+    
     init() {
         drawPile = []
         onTable = []

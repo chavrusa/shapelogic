@@ -23,10 +23,9 @@ final class Set243Game: ObservableObject {
     @Published private(set) var drawPile: [Set243Card]
     @Published private(set) var tableCards: [Set243Card]
     @Published private(set) var selectedCards: Set<Set243Card>
-    @Published private(set) var collectedCards: [Set243Card]
     @Published private(set) var justFoundPerfectSet = false
     
-    var score: Int { collectedCards.count / 3 }
+    var score: Int { (243 - drawPile.count - tableCards.count ) / 3 }
     var isGameOver: Bool { drawPile.isEmpty && !hasSet() }
     
     init() {
@@ -34,7 +33,6 @@ final class Set243Game: ObservableObject {
         drawPile = []
         tableCards = []
         selectedCards = []
-        collectedCards = []
         startNewGame()
     }
     
@@ -117,8 +115,6 @@ final class Set243Game: ObservableObject {
             
             // Remove set from table
             tableCards.removeAll { cards.contains($0) }
-            // Add to collected cards
-            collectedCards.append(contentsOf: cards)
             // Ensure we maintain 12+ cards with a set
             ensureValidTable()
             
@@ -161,7 +157,6 @@ final class Set243Game: ObservableObject {
         drawPile = allCards.shuffled()
         tableCards = []
         selectedCards = []
-        collectedCards = []
         
         // Setup initial board
         ensureValidTable()

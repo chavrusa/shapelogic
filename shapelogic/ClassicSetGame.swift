@@ -22,11 +22,10 @@ final class SetGame: ObservableObject {
     @Published private(set) var drawPile: [Card]
     @Published private(set) var tableCards: [Card]
     @Published private(set) var selectedCards: Set<Card>
-    @Published private(set) var collectedCards: [Card]
     private let easterEggEnabled: Bool
     private var lastDealtCard: Card?
     
-    var score: Int { collectedCards.count / 3 }
+    var score: Int { (81 - drawPile.count - tableCards.count) / 3 }
     var isGameOver: Bool { drawPile.isEmpty && !hasSet() }
     
     init(easterEggEnabled: Bool = false) {
@@ -34,7 +33,6 @@ final class SetGame: ObservableObject {
         drawPile = []
         tableCards = []
         selectedCards = []
-        collectedCards = []
         startNewGame()
     }
     
@@ -114,8 +112,6 @@ final class SetGame: ObservableObject {
         if SetGame.isSet(cards) {
             // Remove set from table
             tableCards.removeAll { cards.contains($0) }
-            // Add to collected cards
-            collectedCards.append(contentsOf: cards)
             // Ensure we maintain 12+ cards with a set
             ensureValidTable()
         }
@@ -141,7 +137,6 @@ final class SetGame: ObservableObject {
         drawPile = allCards.shuffled()
         tableCards = []
         selectedCards = []
-        collectedCards = []
         lastDealtCard = nil
         
         // Setup initial board
