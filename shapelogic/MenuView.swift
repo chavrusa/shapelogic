@@ -13,6 +13,7 @@ enum GameRoute: Hashable {
     case classicSet(easterEgg: Bool)
     case projectiveSet
     case set243
+    case fourStateSet
 }
 
 struct GameMenuItem<Accessory: View>: View {
@@ -113,6 +114,16 @@ struct MenuView: View {
                     .frame(height: 85)
                     .background(Color(uiColor: .systemGray6))
                     .cornerRadius(18)
+                    
+                    GameButton(
+                        title: "Four-State Set",
+                        subtitle: "64 cards, 4 values per feature",
+                        action: { navigationPath.append(GameRoute.fourStateSet) }
+                    )
+                    .frame(height: 85)
+                    .background(Color(uiColor: .systemGray6))
+                    .cornerRadius(18)
+                    
                 }
                 .frame(maxWidth: 500)
                 .padding(.horizontal)
@@ -165,6 +176,14 @@ struct NavigationWrapper: View {
                             }
                     case .set243:
                         Set243GameView(navigationPath: $navigationPath)
+                            .navigationBarBackButtonHidden()
+                            .toolbar {
+                                ToolbarItem(placement: .navigationBarLeading) {
+                                    BackButton(showingAlert: $showingExitAlert)
+                                }
+                            }
+                    case .fourStateSet:
+                        FourStateSetGameView(navigationPath: $navigationPath)
                             .navigationBarBackButtonHidden()
                             .toolbar {
                                 ToolbarItem(placement: .navigationBarLeading) {

@@ -69,7 +69,6 @@ final class Set243Game: ObservableObject {
         return false
     }
     
-    // Deal 3 cards from draw pile to table
     // Deal 3 cards from draw pile to table, inserting them at random positions
     func dealThreeCards() {
         guard drawPile.count >= 3 else { return }

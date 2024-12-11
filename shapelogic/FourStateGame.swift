@@ -1,6 +1,6 @@
 import Foundation
 
-// card with 3 properties each of which has 3 values
+// card with 3 properties each of which has 4 values
 struct FourStateCard: Identifiable, Hashable {
     let id = UUID()
     let color: Int  // <4
@@ -98,6 +98,7 @@ final class FourStateGame: ObservableObject {
                 if onTable.count < 12 { deal() }
                 else if !hasSet() { deal() }
             }
+            selectedCards = []
         }
     }
 }
