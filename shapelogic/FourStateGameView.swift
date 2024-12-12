@@ -54,11 +54,11 @@ struct StripedCircle: View {
     
     var body: some View {
         Circle()
-            .stroke(color, lineWidth: 2)
+            .stroke(color, lineWidth: DeviceAdaptation.isIPad ? 4 : 2.5)
             .overlay(
                 GeometryReader { geometry in
                     let size = min(geometry.size.width, geometry.size.height)
-                    let stripeCount = 6  // Number of stripes
+                    let stripeCount = DeviceAdaptation.isIPad ? 8 : 6  // Number of stripes
                     let stripeSpacing = size / CGFloat(stripeCount)
                     
                     Path { path in
@@ -68,7 +68,7 @@ struct StripedCircle: View {
                             path.addLine(to: CGPoint(x: size, y: y))
                         }
                     }
-                    .stroke(color, lineWidth: 1)
+                    .stroke(color, lineWidth: DeviceAdaptation.isIPad ? 1.5 : 1)
                     .clipShape(Circle().inset(by: 1)) // Inset to avoid edge artifacts
                 }
             )
@@ -80,7 +80,7 @@ struct VerticalLineCircle: View {
     
     var body: some View {
         Circle()
-            .stroke(color, lineWidth: 2)
+            .stroke(color, lineWidth: DeviceAdaptation.isIPad ? 4 : 2.5)
             .overlay(
                 GeometryReader { geometry in
                     let size = min(geometry.size.width, geometry.size.height)
@@ -88,7 +88,7 @@ struct VerticalLineCircle: View {
                         path.move(to: CGPoint(x: size/2, y: 0))  // Start just inside the circle
                         path.addLine(to: CGPoint(x: size/2, y: size))  // End just inside the circle
                     }
-                    .stroke(color, lineWidth: 2)
+                    .stroke(color, lineWidth: DeviceAdaptation.isIPad ? 4 : 2.5)
                 }
             )
     }
@@ -113,7 +113,7 @@ struct FourStateSetGameView: View {
             
             GeometryReader { geometry in
                 let spacing: CGFloat = 8
-                let availableWidth = min(geometry.size.width - spacing * 5, 800)
+                let availableWidth = min(geometry.size.width - spacing * 5, 600)
                 let cardWidth = (availableWidth - spacing * 3) / 4
                 
                 let columns = Array(repeating: GridItem(.fixed(cardWidth), spacing: spacing), count: 4)
@@ -181,16 +181,16 @@ struct FourStateCardView: View {
     let isSelected: Bool
     @Environment(\.colorScheme) private var colorScheme
     
-    private let colors: [Color] = [.red, .cyan, .purple, .green]
+    private let colors: [Color] = [.red, Color(hex: "#8ac926"), .purple, Color(hex: "#009ff8")]
     
     var body: some View {
         GeometryReader { geometry in
             ZStack {
                 // Card background
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: 25)
                     .fill(colorScheme == .dark ? .black : .white)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 10)
+                        RoundedRectangle(cornerRadius: 25)
                             .strokeBorder(isSelected ? .blue : .gray,
                                         lineWidth: isSelected ? 3 : 1)
                     )
@@ -211,17 +211,7 @@ struct FourStateCardView: View {
                                     .frame(width: shapeSize, height: shapeSize)
                             }
                         }
-                    case 2: // Three shapes in diagonal
-                        /* ZStack {
-                            ForEach(0..<3) { index in
-                                circleVariant
-                                    .frame(width: shapeSize, height: shapeSize)
-                                    .offset(
-                                        x: CGFloat(index - 1) * containerSize * 0.35,
-                                        y: CGFloat(index - 1) * containerSize * 0.35
-                                    )
-                            }
-                        } */
+                    case 2:
                         // Three shapes in a triangle
                         VStack(spacing: shapeSize * 0.125) {
                             circleVariant
@@ -268,7 +258,7 @@ struct FourStateCardView: View {
                 .fill(color)
         case 1:  // Outlined circle
             Circle()
-                .stroke(color, lineWidth: 2)
+                .stroke(color, lineWidth: DeviceAdaptation.isIPad ? 4 : 2.5)
         case 2:  // Striped circle
             StripedCircle(color: color)
         default:  // Semi-transparent filled circle

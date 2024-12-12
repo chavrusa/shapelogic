@@ -21,85 +21,62 @@ struct GameRules {
     let title: String
     let objective: String
     let setup: String
-    let howToPlay: String
-    let scoring: String
+//    let howToPlay: String
+//    let scoring: String
     let examples: [String]
 }
 
 // Constants for game rules
 struct GameRulesets {
     static let classicSet = GameRules(
-        title: "Classic Set",
-        objective: "Find sets of three cards where each feature is either all the same or all different across the cards.",
-        setup: "Game starts with 12 cards dealt from a deck of 81 cards. Each card has four features (number, shape, color, and shading) with three possible values each.",
-        howToPlay: """
-        • Select three cards that form a valid set
-        • For each feature (number, shape, color, shading):
-          - All cards must have the same value, OR
-          - All cards must have different values
-        • When a set is found, cards are removed and replaced
-        • Request additional cards if no sets are visible
-        """,
-        scoring: "One point for each set found. Game ends when all sets are collected.",
+        title: "Classic Set (𝔽₃⁴)",
+        objective: "Find all the sets.",
+        setup: "The deck is made of 81 (3⁴) cards. Each card has four features: a shape (diamond, squiggle, or oval), color (red, green, or purple), fill (solid, shaded, or empty), and number (one, two, or three), each of which has three possible values. A set is three cards where for each trait, it is either all the same or all different between the three cards. The board has 12 cards by default, more will be dealt automatically if there is no set.",
         examples: [
-            "Valid set: Three red solid ovals (all same number, shape, color, shading)",
-            "Valid set: One red diamond, two green squiggles, three purple ovals (all features different)",
-            "Invalid set: Two red diamonds, one green diamond (mixed same/different numbers)"
+            "✅ Valid set: One solid purple oval, two solid purple ovals, three solid purple ovals",
+            "✅ Valid set: One shaded red diamond, two solid green squiggles, three empty purple ovals",
+            "❌ Invalid set: One empty green squiggle, two empty green squiggles, three solid green squiggles"
         ]
     )
     
     static let set243 = GameRules(
-        title: "Set-243",
-        objective: "Find sets of three cards following classic Set rules, now with an additional border feature.",
-        setup: "Game starts with 12 cards dealt from a deck of 243 cards (3⁵). Each card has five features (number, shape, color, shading, and border style).",
-        howToPlay: """
-        • Follow classic Set rules with the fifth border feature
-        • Perfect sets (where all features are different) trigger a special animation
-        • Border styles can be solid, dashed, or dotted
-        """,
-        scoring: "One point for each set found. Perfect sets are worth the same but are visually celebrated.",
+        title: "Set-243 (𝔽₃⁵)",
+        objective: "Find all the sets.",
+        setup: "The deck contains 243 (3⁵) cards. Each card has five features: shape (diamond, squiggle, or oval), color (red, green, or purple), fill (solid, shaded, or empty), number (one, two, or three), and border style (lined, dashed, or dotted). A set, similarly to Classic Set, is three cards where each feature is either all the same or all different. The board has 12 cards by default, more will be dealt automatically if there is no set.",
         examples: [
-            "Valid set: Three cards with all same features except different borders",
-            "Perfect set: All five features are different across the three cards",
-            "Invalid set: Two solid borders, one dashed (mixed same/different)"
+            "✅ Valid set: One dot-borderd solid purple oval, two dot-bodered empty purple ovals, three dot-borderd shaded purple ovals",
+            "✅ Valid set: One dash-bordered shaded red diamond, two dot-bordered solid green squiggles, three line-bordered empty purple ovals",
+            "❌ Invalid set: One line-bordered empty green squiggle, two line-bordered empty green squiggles, three dot-borderd empty green squiggles"
         ]
     )
     
     static let projectiveSet = GameRules(
-        title: "Projective Set",
-        objective: "Find sets where each color appears an even number of times across selected cards.",
-        setup: "Game starts with 7 cards dealt from a deck of 63 cards. Each card shows a unique combination of colored dots.",
-        howToPlay: """
-        • Select any number of cards (typically 3-7)
-        • Cards form a set if each color appears an even number of times
-        • Selected cards are removed when they form a set
-        • New cards are dealt to maintain 7 cards when possible
-        """,
-        scoring: "Score is based on total cards collected, not number of sets.",
+        title: "Projective Set (𝔽₂⁶)",
+        objective: "Find all the sets.",
+        setup: "The deck contains 63 (2⁶-1) cards. Each card has six dots on it, which are either present or absent (we have only 63 cards because the empty card is not included). Each dot has a consistent position and color, for ease of play. A set is any number of cards where for each dot, it appears an even number of times across your selected cards. The board always has seven cards, which are guaranteed to contain a set.",
         examples: [
-            "Valid set: Three cards where red appears 2 times, blue 4 times, etc.",
-            "Valid set: Four cards where each color appears exactly twice",
-            "Invalid set: Three cards where red appears 3 times"
+            "✅ Valid set: [1, 2, 3] + [1, [], []] + [[], 2, 3]",
+            """
+            ✅ Valid set:
+            [1, 2, 3, 4, 5, 6] +
+            [[], 2, [], [], [], 6] +
+            [1, 2, 3, 4, [], 6] +
+            [[], [], [], [], 5, 6] +
+            [[], 2, 3, [], [], 6] +
+            [[], [], 3, [], [], 6]
+            """,
+            "❌ Invalid set: [1, 2, 3] + [[], 2, 3] + [1, [], 3]"
         ]
     )
     
     static let fourStateSet = GameRules(
-        title: "Four State Set",
-        objective: "Find sets of four cards where each feature is all the same or all different.",
-        setup: "Game starts with 12 cards dealt from a deck of 64.",
-        howToPlay: """
-        • Select four cards that form a valid set
-        • For each feature (number, shape, color):
-          - All cards must have the same value, OR
-          - All cards must have four different values
-        • When a set is found, cards are removed and replaced
-        • Request additional cards if no sets are visible
-        """,
-        scoring: "One point for each set found. Game ends when all sets are collected.",
+        title: "Four State Set (𝔽₄³)",
+        objective: "Find all the sets.",
+        setup: "The deck contains 64 (4³) cards. Each card has three features: color (red, blue, green, or purple), fill (solid, shaded, crossed, or empty), and number (one, two, three, or four). A set is four cards where each feature is either all the same or all different. The board has 12 cards by default, more will be dealt automatically if there is no set.",
         examples: [
-            "Valid set: Four red circles (all same shape, color; four different numbers)",
-            "Valid set: Four cards with all different shapes, colors, and numbers",
-            "Invalid set: Three different colors and one repeated (must be all same or all different)"
+            "✅ Valid set: One solid red, one solid blue, one solid green, one solid purple",
+            "✅ Valid set: One solid red, two crossed blues, three shaded greens, four empty purples",
+            "❌ Invalid set: Three solid reds, two crossed blues, three shaded greens, three empty purples"
         ]
     )
 }
@@ -113,14 +90,12 @@ struct GameRulesSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     ruleSection("Objective", content: rules.objective)
-                    ruleSection("Setup", content: rules.setup)
-                    ruleSection("How to Play", content: rules.howToPlay)
-                    ruleSection("Scoring", content: rules.scoring)
+                    ruleSection("Rules", content: rules.setup)
                     
                     Text("Examples")
                         .font(.headline)
                     ForEach(rules.examples, id: \.self) { example in
-                        Text("• " + example)
+                        Text(example)
                             .padding(.leading)
                     }
                 }

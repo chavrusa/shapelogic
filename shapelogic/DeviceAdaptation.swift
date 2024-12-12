@@ -23,6 +23,7 @@ enum DeviceAdaptation {
         case classic
         case set243
         case projective
+        case fourstate
         
         var cardScale: CGFloat {
             switch self {
@@ -31,6 +32,8 @@ enum DeviceAdaptation {
             case .set243:
                 return DeviceAdaptation.isIPad ? 0.7 : 1.0
             case .projective:
+                return DeviceAdaptation.isIPad ? 0.6 : 1.0
+            case .fourstate:
                 return DeviceAdaptation.isIPad ? 0.6 : 1.0
             }
         }
@@ -42,6 +45,8 @@ enum DeviceAdaptation {
                 return DeviceAdaptation.isIPad ? 1.4 : 1.0  // Bigger shapes on iPad
             case .projective:
                 return DeviceAdaptation.isIPad ? 1.2 : 1.0  // Moderate increase for dots
+            case .fourstate:
+                return 1.0
             }
         }
         
@@ -54,6 +59,8 @@ enum DeviceAdaptation {
                 return 800
             case .projective:
                 return 700
+            case .fourstate:
+                return 600
             }
         }
     }
