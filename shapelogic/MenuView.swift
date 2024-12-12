@@ -16,26 +16,86 @@ enum GameRoute: Hashable {
     case fourStateSet
 }
 
-// Data structure to hold game rules
+// Protocol for all card types to share common interface
+protocol CardProtocol: Identifiable, Hashable { }
+extension Card: CardProtocol { }
+extension Set243Card: CardProtocol { }
+extension ProjectiveCard: CardProtocol { }
+extension FourStateCard: CardProtocol { }
+
 struct GameRules {
     let title: String
     let objective: String
     let setup: String
-//    let howToPlay: String
-//    let scoring: String
-    let examples: [String]
+    let examples: [ExampleSet]
 }
 
-// Constants for game rules
+struct ExampleSet {
+    let isValid: Bool
+    let cards: [any CardProtocol]
+    let invalidIndices: Set<Int>  // Used only for invalid sets
+    
+    static func valid(_ cards: [any CardProtocol]) -> ExampleSet {
+        ExampleSet(isValid: true, cards: cards, invalidIndices: [])
+    }
+    
+    static func invalid(_ cards: [any CardProtocol], highlighting indices: Set<Int>) -> ExampleSet {
+        ExampleSet(isValid: false, cards: cards, invalidIndices: indices)
+    }
+}
+
+// Component to show a row of example cards
+struct ExampleCardRow<T: CardProtocol>: View {
+    let example: ExampleSet
+    let cardView: (T, Bool) -> any View  // Function to create appropriate card view
+    
+    var body: some View {
+        HStack(spacing: 8) {
+            ForEach(Array(example.cards.enumerated()), id: \.offset) { index, cardAny in
+                let card = cardAny as! T  // Safe because we control the types
+                AnyView(cardView(card, example.invalidIndices.contains(index)))
+                    .frame(height: 80)  // Fixed height for consistent sizing
+            }
+        }
+        .padding(.horizontal)
+    }
+}
+
+// Extension to show an example card with potential invalid highlighting
+extension View {
+    func invalidHighlight(_ isInvalid: Bool) -> some View {
+        self.overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color.red.opacity(isInvalid ? 0.15 : 0))
+        )
+    }
+}
+
+// Updated game rulesets
 struct GameRulesets {
     static let classicSet = GameRules(
         title: "Classic Set (𝔽₃⁴)",
         objective: "Find all the sets.",
         setup: "The deck is made of 81 (3⁴) cards. Each card has four features: a shape (diamond, squiggle, or oval), color (red, green, or purple), fill (solid, shaded, or empty), and number (one, two, or three), each of which has three possible values. A set is three cards where for each trait, it is either all the same or all different between the three cards. The board has 12 cards by default, more will be dealt automatically if there is no set.",
         examples: [
-            "✅ Valid set: One solid purple oval, two solid purple ovals, three solid purple ovals",
-            "✅ Valid set: One shaded red diamond, two solid green squiggles, three empty purple ovals",
-            "❌ Invalid set: One empty green squiggle, two empty green squiggles, three solid green squiggles"
+            // All same except number
+            .valid([
+                Card(number: 0, shape: 2, color: 1, shading: 0),
+                Card(number: 1, shape: 2, color: 1, shading: 0),
+                Card(number: 2, shape: 2, color: 1, shading: 0)
+            ]),
+            // All different
+            .valid([
+                Card(number: 0, shape: 0, color: 0, shading: 0),
+                Card(number: 1, shape: 1, color: 1, shading: 1),
+                Card(number: 2, shape: 2, color: 2, shading: 2)
+            ]),
+            // Invalid - mixed same/different for shape
+            .invalid([
+                Card(number: 0, shape: 0, color: 2, shading: 0),
+                Card(number: 1, shape: 0, color: 2, shading: 0),
+                Card(number: 2, shape: 1, color: 2, shading: 0)
+            ], highlighting: [2])
         ]
     )
     
@@ -44,9 +104,24 @@ struct GameRulesets {
         objective: "Find all the sets.",
         setup: "The deck contains 243 (3⁵) cards. Each card has five features: shape (diamond, squiggle, or oval), color (red, green, or purple), fill (solid, shaded, or empty), number (one, two, or three), and border style (lined, dashed, or dotted). A set, similarly to Classic Set, is three cards where each feature is either all the same or all different. The board has 12 cards by default, more will be dealt automatically if there is no set.",
         examples: [
-            "✅ Valid set: One dot-borderd solid purple oval, two dot-bodered empty purple ovals, three dot-borderd shaded purple ovals",
-            "✅ Valid set: One dash-bordered shaded red diamond, two dot-bordered solid green squiggles, three line-bordered empty purple ovals",
-            "❌ Invalid set: One line-bordered empty green squiggle, two line-bordered empty green squiggles, three dot-borderd empty green squiggles"
+            // All same except number
+            .valid([
+                Set243Card(number: 0, shape: 1, color: 2, shading: 1, border: 1),
+                Set243Card(number: 1, shape: 1, color: 2, shading: 1, border: 1),
+                Set243Card(number: 2, shape: 1, color: 2, shading: 1, border: 1)
+            ]),
+            // All different
+            .valid([
+                Set243Card(number: 0, shape: 2, color: 1, shading: 1, border: 2),
+                Set243Card(number: 1, shape: 1, color: 2, shading: 0, border: 0),
+                Set243Card(number: 2, shape: 0, color: 0, shading: 2, border: 1)
+            ]),
+            // Invalid - mixed same/different for border
+            .invalid([
+                Set243Card(number: 1, shape: 2, color: 1, shading: 1, border: 1),
+                Set243Card(number: 1, shape: 2, color: 2, shading: 1, border: 1),
+                Set243Card(number: 1, shape: 2, color: 3, shading: 2, border: 0)
+            ], highlighting: [2])
         ]
     )
     
@@ -55,28 +130,55 @@ struct GameRulesets {
         objective: "Find all the sets.",
         setup: "The deck contains 63 (2⁶-1) cards. Each card has six dots on it, which are either present or absent (we have only 63 cards because the empty card is not included). Each dot has a consistent position and color, for ease of play. A set is any number of cards where for each dot, it appears an even number of times across your selected cards. The board always has seven cards, which are guaranteed to contain a set.",
         examples: [
-            "✅ Valid set: [1, 2, 3] + [1, [], []] + [[], 2, 3]",
-            """
-            ✅ Valid set:
-            [1, 2, 3, 4, 5, 6] +
-            [[], 2, [], [], [], 6] +
-            [1, 2, 3, 4, [], 6] +
-            [[], [], [], [], 5, 6] +
-            [[], 2, 3, [], [], 6] +
-            [[], [], 3, [], [], 6]
-            """,
-            "❌ Invalid set: [1, 2, 3] + [[], 2, 3] + [1, [], 3]"
+            // Simple 3-card set
+            .valid([
+                ProjectiveCard(features: [true, true, true, false, false, false]),
+                ProjectiveCard(features: [true, false, false, true, true, false]),
+                ProjectiveCard(features: [false, true, true, true, true, false])
+            ]),
+            // Complex 4-card set
+            .valid([
+                ProjectiveCard(features: [true, true, true, true, true, true]),
+                ProjectiveCard(features: [false, true, false, false, false, true]),
+                ProjectiveCard(features: [true, true, true, true, false, true]),
+                ProjectiveCard(features: [false, true, true, false, true, false]),
+                ProjectiveCard(features: [false, false, true, false, false, true])
+            ]),
+            // Invalid - odd number of first dot
+            .invalid([
+                ProjectiveCard(features: [true, true, true, false, false, false]),
+                ProjectiveCard(features: [true, true, true, true, false, false]),
+                ProjectiveCard(features: [false, false, false, true, false, true])
+            ], highlighting: [2])
         ]
     )
     
     static let fourStateSet = GameRules(
-        title: "Four State Set (𝔽₄³)",
+        title: "Four-State Set (𝔽₄³)",
         objective: "Find all the sets.",
         setup: "The deck contains 64 (4³) cards. Each card has three features: color (red, blue, green, or purple), fill (solid, shaded, crossed, or empty), and number (one, two, three, or four). A set is four cards where each feature is either all the same or all different. The board has 12 cards by default, more will be dealt automatically if there is no set.",
         examples: [
-            "✅ Valid set: One solid red, one solid blue, one solid green, one solid purple",
-            "✅ Valid set: One solid red, two crossed blues, three shaded greens, four empty purples",
-            "❌ Invalid set: Three solid reds, two crossed blues, three shaded greens, three empty purples"
+            // All same except number
+            .valid([
+                FourStateCard(color: 0, shape: 0, number: 0),
+                FourStateCard(color: 0, shape: 0, number: 1),
+                FourStateCard(color: 0, shape: 0, number: 2),
+                FourStateCard(color: 0, shape: 0, number: 3)
+            ]),
+            // All different
+            .valid([
+                FourStateCard(color: 0, shape: 0, number: 0),
+                FourStateCard(color: 1, shape: 1, number: 1),
+                FourStateCard(color: 2, shape: 2, number: 2),
+                FourStateCard(color: 3, shape: 3, number: 3)
+            ]),
+            // Invalid - repeated number
+            .invalid([
+                FourStateCard(color: 1, shape: 1, number: 0),
+                FourStateCard(color: 3, shape: 2, number: 1),
+                FourStateCard(color: 2, shape: 3, number: 0),
+                FourStateCard(color: 0, shape: 0, number: 0)
+            ], highlighting: [1])
         ]
     )
 }
@@ -94,9 +196,37 @@ struct GameRulesSheet: View {
                     
                     Text("Examples")
                         .font(.headline)
-                    ForEach(rules.examples, id: \.self) { example in
-                        Text(example)
-                            .padding(.leading)
+                    
+                    VStack(spacing: 16) {
+                        ForEach(Array(rules.examples.enumerated()), id: \.0) { index, example in
+                            VStack(alignment: .center, spacing: 8) {
+                                Text(example.isValid ? "✅ Valid" : "❌ Invalid")
+                                    .font(.subheadline)
+                                    .foregroundColor(example.isValid ? .primary : .red)
+                                
+                                if let classicCards = example.cards as? [Card] {
+                                    ExampleCardRow(example: example) { card, isInvalid in
+                                        CardView(card: card, isSelected: false, isHidden: false)
+                                            .invalidHighlight(isInvalid)
+                                    }
+                                } else if let set243Cards = example.cards as? [Set243Card] {
+                                    ExampleCardRow(example: example) { card, isInvalid in
+                                        Set243CardView(card: card, isSelected: false)
+                                            .invalidHighlight(isInvalid)
+                                    }
+                                } else if let projectiveCards = example.cards as? [ProjectiveCard] {
+                                    ExampleCardRow(example: example) { card, isInvalid in
+                                        ProjectiveCardView(card: card, isSelected: false, colors: [.red, .orange, .yellow, .green, .blue, .purple])
+                                            .invalidHighlight(isInvalid)
+                                    }
+                                } else if let fourStateCards = example.cards as? [FourStateCard] {
+                                    ExampleCardRow(example: example) { card, isInvalid in
+                                        FourStateCardView(card: card, isSelected: false)
+                                            .invalidHighlight(isInvalid)
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 .padding()
