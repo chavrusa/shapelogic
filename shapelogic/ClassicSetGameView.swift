@@ -109,6 +109,48 @@ struct StripedShapeContent: View {
     }
 }
 
+/*
+struct ConditionalScrollView<Content: View>: View {
+    let content: Content
+    @State private var contentSize: CGSize = .zero
+    @State private var scrollEnabled = false
+    
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+    
+    var body: some View {
+        GeometryReader { geometry in
+            ScrollView {
+                content
+                    .background(
+                        GeometryReader { contentGeometry in
+                            Color.clear.preference(
+                                key: ContentSizePreferenceKey.self,
+                                value: contentGeometry.size
+                            )
+                        }
+                    )
+            }
+            .scrollDisabled(!scrollEnabled)
+            .onPreferenceChange(ContentSizePreferenceKey.self) { size in
+                contentSize = size
+                scrollEnabled = size.height > geometry.size.height
+            }
+        }
+    }
+}
+
+// Preference key to track content size
+struct ContentSizePreferenceKey: PreferenceKey {
+    static var defaultValue: CGSize = .zero
+    
+    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+        value = nextValue()
+    }
+}
+*/
+
 struct SetGameView: View {
     @StateObject private var game: SetGame
     @State private var showingWinAlert = false
@@ -171,6 +213,7 @@ struct SetGameView: View {
                 GridItem(.fixed(cardWidth))
             ]
             
+            //ConditionalScrollView
             ScrollView {
                 if DeviceAdaptation.isIPad {
                     // Only center content on iPad

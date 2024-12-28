@@ -49,11 +49,13 @@ final class ProjectiveSetGame: ObservableObject {
     }
     
     func selectCard(_ card: ProjectiveCard) {
+        HapticManager.shared.cardSelected()
         if selectedCards.contains(card) {
             selectedCards.remove(card)
         } else {
             selectedCards.insert(card)
             if selectedCards.count >= 3 && ProjectiveSetGame.isSet(Array(selectedCards)) {
+                HapticManager.shared.validSetFound()
                 processSelectedSet()
             }
         }

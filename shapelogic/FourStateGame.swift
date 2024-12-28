@@ -85,6 +85,7 @@ final class FourStateGame: ObservableObject {
     }
     
     func selectCard(_ card: FourStateCard) {
+        HapticManager.shared.cardSelected()
         if selectedCards.contains(card) {
             selectedCards.remove(card)
         }
@@ -94,9 +95,13 @@ final class FourStateGame: ObservableObject {
         if selectedCards.count == 4 {
             let cardsArray = Array(selectedCards)
             if FourStateGame.isSet(cards: cardsArray) {
+                HapticManager.shared.validSetFound()
                 onTable.removeAll { cardsArray.contains($0) }
                 if onTable.count < 12 { deal() }
                 else if !hasSet() { deal() }
+            }
+            else {
+                HapticManager.shared.invalidSetAttempted()
             }
             selectedCards = []
         }

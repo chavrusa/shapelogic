@@ -97,6 +97,7 @@ final class SetGame: ObservableObject {
     
     // Handle card selection
     func selectCard(_ card: Card) {
+        HapticManager.shared.cardSelected()
         if selectedCards.contains(card) {
             selectedCards.remove(card)
         } else if selectedCards.count < 3 {
@@ -110,10 +111,14 @@ final class SetGame: ObservableObject {
     private func processSelectedCards() {
         let cards = Array(selectedCards)
         if SetGame.isSet(cards) {
+            HapticManager.shared.validSetFound()
             // Remove set from table
             tableCards.removeAll { cards.contains($0) }
             // Ensure we maintain 12+ cards with a set
             ensureValidTable()
+        }
+        else {
+            HapticManager.shared.invalidSetAttempted()
         }
         // Clear selection either way
         selectedCards.removeAll()

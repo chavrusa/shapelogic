@@ -96,6 +96,7 @@ final class Set243Game: ObservableObject {
     }
     
     func selectCard(_ card: Set243Card) {
+        HapticManager.shared.cardSelected()
         if selectedCards.contains(card) {
             selectedCards.remove(card)
         } else if selectedCards.count < 3 {
@@ -109,6 +110,7 @@ final class Set243Game: ObservableObject {
     private func processSelectedCards() {
         let cards = Array(selectedCards)
         if Set243Game.isSet(cards) {
+            HapticManager.shared.validSetFound()
             // Check for perfect set before modifying table
             let isPerfect = Set243Game.isPerfectSet(cards)
             
@@ -120,12 +122,16 @@ final class Set243Game: ObservableObject {
             // Trigger animation if perfect
             if isPerfect {
                 justFoundPerfectSet = true
+                HapticManager.shared.perfectSetFound()
                 // Reset after brief delay
                 Task { @MainActor in
                     try? await Task.sleep(nanoseconds: 200_000_000) // 0.2 seconds
                     justFoundPerfectSet = false
                 }
             }
+        }
+        else {
+            HapticManager.shared.invalidSetAttempted()
         }
         // Clear selection once cards are processed
         selectedCards.removeAll()
