@@ -67,7 +67,7 @@ struct Set243GameView: View {
                     if !game.drawPile.isEmpty {
                         Button("Deal 3 Cards") {
                             withAnimation {
-                                game.dealThreeCards()
+                                game.deal(true)
                             }
                         }
                         .buttonStyle(.borderedProminent)

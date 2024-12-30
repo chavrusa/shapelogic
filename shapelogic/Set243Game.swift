@@ -25,6 +25,20 @@ final class Set243Game: ObservableObject {
     @Published private(set) var selectedCards: Set<Set243Card>
     @Published private(set) var justFoundPerfectSet = false
     
+    private static let allCards: [Set243Card] = {
+        var cards: [Set243Card] = []
+        for i in 0..<243 {
+            cards.append(Set243Card(
+                number: i%3,
+                shape: (i%9)/3,
+                color: (i%27)/9,
+                shading: (i%81)/27,
+                border: (i%243)/81
+            ))
+        }
+        return cards
+    }()
+    
     var score: Int { (243 - drawPile.count - tableCards.count ) / 3 }
     var isGameOver: Bool { drawPile.isEmpty && !hasSet() }
     
@@ -45,16 +59,6 @@ final class Set243Game: ObservableObject {
         }
     }
     
-    // Helper for producing a green flash for perfect cards
-    static func isPerfectSet(_ cards: [Set243Card]) -> Bool {
-        guard cards.count == 3 else { return false }
-        // Check each property - all must be different
-        return (0...4).allSatisfy { property in
-            let values = cards.map { $0.properties[property] }
-            return Set(values).count == 3  // All different
-        }
-    }
-    
     // Check if current table has any sets
     func hasSet() -> Bool {
         for i in 0..<tableCards.count - 2 {
@@ -69,41 +73,33 @@ final class Set243Game: ObservableObject {
         return false
     }
     
-    // Deal 3 cards from draw pile to table, inserting them at random positions
-    func dealThreeCards() {
+    func deal(_ dealAnyway: Bool) {
         guard drawPile.count >= 3 else { return }
-        let newCards = drawPile.suffix(3)
-        drawPile.removeLast(3)
-        
-        // For each new card, insert it at a random position in tableCards
-        for card in newCards {
+        if (tableCards.count > 12) && hasSet() && !dealAnyway { return }
+                
+        for card in drawPile.suffix(3) {
             let randomIndex = Int.random(in: 0...tableCards.count)
             tableCards.insert(card, at: randomIndex)
         }
-    }
-    
-    // Keep dealing until we have 12+ cards and at least one set
-    func ensureValidTable() {
-        // First ensure 12 cards if possible
-        while tableCards.count < 12 && drawPile.count >= 3 {
-            dealThreeCards()
-        }
         
-        // Then if no set exists, keep adding cards until we find one
-        while !hasSet() && drawPile.count >= 3 {
-            dealThreeCards()
-        }
+        drawPile.removeLast(3)
+        
+        deal(false)
     }
     
     func selectCard(_ card: Set243Card) {
         HapticManager.shared.cardSelected()
+        
         if selectedCards.contains(card) {
             selectedCards.remove(card)
-        } else if selectedCards.count < 3 {
+        }
+        
+        else if selectedCards.count < 3 {
             selectedCards.insert(card)
-            if selectedCards.count == 3 {
-                processSelectedCards()
-            }
+        }
+        
+        if selectedCards.count == 3 {
+            processSelectedCards()
         }
     }
     
@@ -112,12 +108,15 @@ final class Set243Game: ObservableObject {
         if Set243Game.isSet(cards) {
             HapticManager.shared.validSetFound()
             // Check for perfect set before modifying table
-            let isPerfect = Set243Game.isPerfectSet(cards)
+            let isPerfect = (0...4).allSatisfy { property in
+                let values = cards.map { $0.properties[property] }
+                return Set(values).count == 3  // All different
+            }
             
             // Remove set from table
             tableCards.removeAll { cards.contains($0) }
-            // Ensure we maintain 12+ cards with a set
-            ensureValidTable()
+            // Put down more (will not deal if not needed)
+            deal(false)
             
             // Trigger animation if perfect
             if isPerfect {
@@ -138,32 +137,12 @@ final class Set243Game: ObservableObject {
     }
     
     func startNewGame() {
-        // Generate all 243 cards (3^5 combinations)
-        var allCards: [Set243Card] = []
-        for n in 0..<3 {
-            for s in 0..<3 {
-                for c in 0..<3 {
-                    for sh in 0..<3 {
-                        for b in 0..<3 {
-                            allCards.append(Set243Card(
-                                number: n,
-                                shape: s,
-                                color: c,
-                                shading: sh,
-                                border: b
-                            ))
-                        }
-                    }
-                }
-            }
-        }
-        
         // Reset game state
-        drawPile = allCards.shuffled()
+        drawPile = Set243Game.allCards.shuffled()
         tableCards = []
         selectedCards = []
         
         // Setup initial board
-        ensureValidTable()
+        deal(false)
     }
 }
