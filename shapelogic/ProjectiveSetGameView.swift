@@ -1,6 +1,6 @@
 //
 //  ProjectiveSetGameView.swift
-//  set
+//  shapelogic
 //
 //  Created by arishal on 11/26/24.
 //
@@ -14,21 +14,12 @@ struct ProjectiveSetGameView: View {
     @Binding var navigationPath: NavigationPath
     
     private let dotColors: [Color] = [
-        //.red, .orange, .yellow, .green, .blue, .purple
-        /* weird colorset
-         Color(hex: "#fd05a1"),
-         Color(hex: "#ff8f31"),
-         Color(hex: "#3fae2a"),
-         Color(hex: "#24e5e7"),
-         Color(hex: "#0d41e1"),
-         Color(hex: "#7400b8") */
-        // best classic colorset
-         Color(hex: "#fd05a1"),
-         Color(hex: "#ff8200"),
-         Color(hex: "#ffdd47"),
-         Color(hex: "#3fae2a"),
-         Color(hex: "#2c7ce5"),
-         Color(hex: "#7209b7")
+        Color(hex: "#fd05a1"),
+        Color(hex: "#ff8200"),
+        Color(hex: "#ffdd47"),
+        Color(hex: "#3fae2a"),
+        Color(hex: "#2c7ce5"),
+        Color(hex: "#7209b7")
     ]
     
     var body: some View {

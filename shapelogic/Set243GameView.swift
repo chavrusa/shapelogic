@@ -1,6 +1,6 @@
 //
 //  Set243GameView.swift
-//  set
+//  shapelogic
 //
 //  Created by arishal on 11/27/24.
 //
@@ -223,18 +223,6 @@ struct Set243CardView: View {
                         RoundedRectangle(cornerRadius: 12)
                             .strokeBorder(cardColor, lineWidth: DeviceAdaptation.isIPad ? 3.5 : 2)
                     case 1:  // Dotted
-                        //old dotted impl:
-                        /*
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(cardColor,
-                                        style: StrokeStyle(lineWidth: DeviceAdaptation.isIPad ? 4 : 2.5, dash: DeviceAdaptation.isIPad ? [5] : [2]))
-                                // Two-line option
-                                /*.strokeBorder(cardColor, lineWidth: 2)
-                            RoundedRectangle(cornerRadius: 6)
-                                .strokeBorder(cardColor, lineWidth: 2)
-                                .padding(3)*/
-                        } */
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(cardColor, style: StrokeStyle(
                                 lineWidth: DeviceAdaptation.isIPad ? 4 : 3,

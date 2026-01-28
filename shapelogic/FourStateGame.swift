@@ -1,106 +1,111 @@
+//
+//  FourStateGame.swift
+//  shapelogic
+//
+//  Created by arishal on 12/10/24.
+//
+
 import Foundation
 
-// card with 3 properties each of which has 4 values
 struct FourStateCard: Identifiable, Hashable {
     let id = UUID()
-    let color: Int  // <4
-    let shape: Int  // <4
-    let number: Int // <4
+    let color: Int
+    let shape: Int
+    let number: Int
+
     var properties: [Int] { [color, shape, number] }
 }
 
 @MainActor
 final class FourStateGame: ObservableObject {
     @Published private(set) var drawPile: [FourStateCard]
-    @Published private(set) var onTable: [FourStateCard]
+    @Published private(set) var tableCards: [FourStateCard]
     @Published private(set) var selectedCards: Set<FourStateCard>
-    
-    private static let AllCards: [FourStateCard] = {
-        var cards: [FourStateCard] = []
-        for i in 0..<64 {
-            cards.append(FourStateCard(
-                color: i%4,
-                shape: (i%16)/4,
-                number: (i%64)/16
-            ))
+
+    private static let allCards: [FourStateCard] = {
+        (0..<64).map { i in
+            FourStateCard(
+                color: i % 4,
+                shape: (i / 4) % 4,
+                number: i / 16
+            )
         }
-        return cards
     }()
-    
-    var score: Int { (64 - drawPile.count - onTable.count) / 4 }
-    var isGameOver: Bool { drawPile.count == 0 && !hasSet() }
-    
+
+    var score: Int { (64 - drawPile.count - tableCards.count) / 4 }
+    var isGameOver: Bool { drawPile.isEmpty && !hasSet() }
+
     init() {
         drawPile = []
-        onTable = []
+        tableCards = []
         selectedCards = []
         startNewGame()
     }
-    
+
     func startNewGame() {
-        drawPile = Self.AllCards.shuffled()
-        onTable = []
+        drawPile = Self.allCards.shuffled()
+        tableCards = []
         selectedCards = []
-        
         deal()
     }
-    
+
     func deal() {
-        if drawPile.count < 4 { return }
-        
-        onTable.append(contentsOf: drawPile.suffix(4))
+        guard drawPile.count >= 4 else { return }
+
+        tableCards.append(contentsOf: drawPile.suffix(4))
         drawPile.removeLast(4)
-        
-        if onTable.count < 12 { deal() }
-        if !hasSet() { deal() }
-    }
-    
-    static func isSet(cards: [FourStateCard]) -> Bool {
-        guard cards.count == 4 else { return false }
-        // check each property
-        for i in 0..<3 {
-            let vals = Set(cards.map { $0.properties[i] })
-            if vals.count != 1 && vals.count != 4 {
-                return false
-            }
+
+        if tableCards.count < 12 || !hasSet() {
+            deal()
         }
-        return true
     }
-    
+
+    static func isSet(_ cards: [FourStateCard]) -> Bool {
+        guard cards.count == 4 else { return false }
+        return (0..<3).allSatisfy { property in
+            let values = Set(cards.map { $0.properties[property] })
+            return values.count == 1 || values.count == 4
+        }
+    }
+
     func hasSet() -> Bool {
-        guard onTable.count >= 4 else { return false }
-        if onTable.count == 4 { return FourStateGame.isSet(cards: onTable) }
-        
-        for i in 0..<onTable.count-3 {
-            for j in (i+1)..<onTable.count-2 {
-                for k in (j+1)..<onTable.count-1 {
-                    for l in (k+1)..<onTable.count {
-                        if FourStateGame.isSet(cards: [onTable[i], onTable[j], onTable[k], onTable[l]])
-                        { return true }
+        guard tableCards.count >= 4 else { return false }
+        if tableCards.count == 4 {
+            return FourStateGame.isSet(tableCards)
+        }
+
+        for i in 0..<tableCards.count - 3 {
+            for j in (i + 1)..<tableCards.count - 2 {
+                for k in (j + 1)..<tableCards.count - 1 {
+                    for l in (k + 1)..<tableCards.count {
+                        if FourStateGame.isSet([tableCards[i], tableCards[j], tableCards[k], tableCards[l]]) {
+                            return true
+                        }
                     }
                 }
             }
         }
         return false
     }
-    
+
     func selectCard(_ card: FourStateCard) {
         HapticManager.shared.cardSelected()
+
         if selectedCards.contains(card) {
             selectedCards.remove(card)
-        }
-        else if selectedCards.count < 4 {
+        } else if selectedCards.count < 4 {
             selectedCards.insert(card)
         }
+
         if selectedCards.count == 4 {
-            let cardsArray = Array(selectedCards)
-            if FourStateGame.isSet(cards: cardsArray) {
+            let cards = Array(selectedCards)
+            if FourStateGame.isSet(cards) {
                 HapticManager.shared.validSetFound()
-                onTable.removeAll { cardsArray.contains($0) }
-                if onTable.count < 12 { deal() }
-                else if !hasSet() { deal() }
-            }
-            else {
+                tableCards.removeAll { cards.contains($0) }
+                if tableCards.count < 12 || !hasSet() {
+                    deal()
+                }
+            } else {
                 HapticManager.shared.invalidSetAttempted()
             }
             selectedCards = []

@@ -8,47 +8,6 @@
 import Foundation
 import SwiftUI
 
-/*
-// Custom shapes for the game
-struct Triangle: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        // Make it equilateral
-        let height = rect.width * sqrt(3) / 2
-        let centerY = rect.midY
-        path.move(to: CGPoint(x: rect.midX, y: centerY - height/2))
-        path.addLine(to: CGPoint(x: rect.maxX, y: centerY + height/2))
-        path.addLine(to: CGPoint(x: rect.minX, y: centerY + height/2))
-        path.closeSubpath()
-        return path
-    }
-}
-
-struct RoundedSquare: Shape {
-    func path(in rect: CGRect) -> Path {
-        let radius = min(rect.width, rect.height) * 0.2 // Corner radius
-        let rect = rect.insetBy(dx: rect.width * 0.06, dy: rect.height * 0.06) // Make slightly smaller like other shapes
-        return Path(roundedRect: rect, cornerRadius: radius)
-    }
-}
-
-struct Rhombus: Shape {
-    func path(in rect: CGRect) -> Path {
-        let width = rect.width * 1.1
-        let height = rect.height * 1.1
-        let center = CGPoint(x: rect.midX, y: rect.midY)
-        
-        var path = Path()
-        path.move(to: CGPoint(x: center.x, y: center.y - height/2))  // top
-        path.addLine(to: CGPoint(x: center.x + width/2, y: center.y))  // right
-        path.addLine(to: CGPoint(x: center.x, y: center.y + height/2))  // bottom
-        path.addLine(to: CGPoint(x: center.x - width/2, y: center.y))  // left
-        path.closeSubpath()
-        return path
-    }
-}
- */
-
 struct StripedCircle: View {
     let color: Color
     
@@ -120,7 +79,7 @@ struct FourStateSetGameView: View {
                 
                 ScrollView {
                     LazyVGrid(columns: columns, spacing: spacing) {
-                        ForEach(game.onTable) { card in
+                        ForEach(game.tableCards) { card in
                             FourStateCardView(
                                 card: card,
                                 isSelected: game.selectedCards.contains(card)
@@ -261,11 +220,8 @@ struct FourStateCardView: View {
                 .stroke(color, lineWidth: DeviceAdaptation.isIPad ? 4 : 2.5)
         case 2:  // Striped circle
             StripedCircle(color: color)
-        default:  // Semi-transparent filled circle
+        default:
             VerticalLineCircle(color: color)
-            /*Circle()
-                .fill(color.opacity(0.5))
-                .stroke(color, lineWidth: 2)*/
         }
     }
 }

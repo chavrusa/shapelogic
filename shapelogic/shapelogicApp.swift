@@ -8,19 +8,21 @@
 import SwiftUI
 
 @main
-struct setApp: App {
+struct ShapeLogicApp: App {
     @UIApplicationDelegateAdaptor private var appDelegate: AppDelegate
-        
+
     var body: some Scene {
         WindowGroup {
             NavigationWrapper()
-                .preferredColorScheme(.none) // Allow system color scheme
         }
     }
 }
 
-class AppDelegate: NSObject, UIApplicationDelegate {
-    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+final class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(
+        _ application: UIApplication,
+        supportedInterfaceOrientationsFor window: UIWindow?
+    ) -> UIInterfaceOrientationMask {
         DeviceAdaptation.isIPad ? .all : .portrait
     }
 }

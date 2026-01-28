@@ -1,7 +1,7 @@
 //
 //  Set243Game.swift
-//  set
-//  Set 243 variant game logic
+//  shapelogic
+//
 //  Created by arishal on 11/27/24.
 //
 
@@ -9,12 +9,12 @@ import Foundation
 
 struct Set243Card: Identifiable, Hashable {
     let id = UUID()
-    let number: Int      // Classic feature
-    let shape: Int       // Classic feature
-    let color: Int      // Classic feature
-    let shading: Int    // Classic feature
-    let border: Int     // New fifth feature!
-    
+    let number: Int
+    let shape: Int
+    let color: Int
+    let shading: Int
+    let border: Int
+
     var properties: [Int] { [number, shape, color, shading, border] }
 }
 
@@ -24,43 +24,39 @@ final class Set243Game: ObservableObject {
     @Published private(set) var tableCards: [Set243Card]
     @Published private(set) var selectedCards: Set<Set243Card>
     @Published private(set) var justFoundPerfectSet = false
-    
+
     private static let allCards: [Set243Card] = {
-        var cards: [Set243Card] = []
-        for i in 0..<243 {
-            cards.append(Set243Card(
-                number: i%3,
-                shape: (i%9)/3,
-                color: (i%27)/9,
-                shading: (i%81)/27,
-                border: (i%243)/81
-            ))
+        (0..<243).map { i in
+            Set243Card(
+                number: i % 3,
+                shape: (i / 3) % 3,
+                color: (i / 9) % 3,
+                shading: (i / 27) % 3,
+                border: i / 81
+            )
         }
-        return cards
     }()
-    
-    var score: Int { (243 - drawPile.count - tableCards.count ) / 3 }
+
+    var score: Int { (243 - drawPile.count - tableCards.count) / 3 }
     var isGameOver: Bool { drawPile.isEmpty && !hasSet() }
-    
+
     init() {
-        // Start with empty state
         drawPile = []
         tableCards = []
         selectedCards = []
         startNewGame()
     }
-    
-    // Check if three cards make a set
+
     static func isSet(_ cards: [Set243Card]) -> Bool {
         guard cards.count == 3 else { return false }
-        // Check all 5 properties (including border)
-        return (0...4).allSatisfy { property in
+        return (0..<5).allSatisfy { property in
             cards.map { $0.properties[property] }.reduce(0, +) % 3 == 0
         }
     }
-    
-    // Check if current table has any sets
+
     func hasSet() -> Bool {
+        guard tableCards.count >= 3 else { return false }
+
         for i in 0..<tableCards.count - 2 {
             for j in (i + 1)..<tableCards.count - 1 {
                 for k in (j + 1)..<tableCards.count {
@@ -72,77 +68,68 @@ final class Set243Game: ObservableObject {
         }
         return false
     }
-    
-    func deal(_ dealAnyway: Bool) {
+
+    func deal(_ force: Bool) {
         guard drawPile.count >= 3 else { return }
-        if (tableCards.count > 12) && hasSet() && !dealAnyway { return }
-                
+        if tableCards.count > 12 && hasSet() && !force { return }
+
+        // Insert cards at random positions for visual variety
         for card in drawPile.suffix(3) {
             let randomIndex = Int.random(in: 0...tableCards.count)
             tableCards.insert(card, at: randomIndex)
         }
-        
         drawPile.removeLast(3)
-        
+
         deal(false)
     }
-    
+
     func selectCard(_ card: Set243Card) {
         HapticManager.shared.cardSelected()
-        
+
         if selectedCards.contains(card) {
             selectedCards.remove(card)
-        }
-        
-        else if selectedCards.count < 3 {
+        } else if selectedCards.count < 3 {
             selectedCards.insert(card)
         }
-        
+
         if selectedCards.count == 3 {
             processSelectedCards()
         }
     }
-    
+
     private func processSelectedCards() {
         let cards = Array(selectedCards)
+
         if Set243Game.isSet(cards) {
             HapticManager.shared.validSetFound()
-            // Check for perfect set before modifying table
-            let isPerfect = (0...4).allSatisfy { property in
-                let values = cards.map { $0.properties[property] }
-                return Set(values).count == 3  // All different
+
+            // Check for perfect set (all features different)
+            let isPerfect = (0..<5).allSatisfy { property in
+                Set(cards.map { $0.properties[property] }).count == 3
             }
-            
-            // Remove set from table
+
             tableCards.removeAll { cards.contains($0) }
-            // Put down more (will not deal if not needed)
             deal(false)
-            
-            // Trigger animation if perfect
+
             if isPerfect {
                 justFoundPerfectSet = true
                 HapticManager.shared.perfectSetFound()
-                // Reset after brief delay
                 Task { @MainActor in
-                    try? await Task.sleep(nanoseconds: 200_000_000) // 0.2 seconds
+                    try? await Task.sleep(nanoseconds: 200_000_000)
                     justFoundPerfectSet = false
                 }
             }
-        }
-        else {
+        } else {
             HapticManager.shared.invalidSetAttempted()
         }
-        // Clear selection once cards are processed
+
         selectedCards.removeAll()
     }
-    
+
     func startNewGame() {
-        // Reset game state
-        drawPile = Set243Game.allCards.shuffled()
+        drawPile = Self.allCards.shuffled()
         tableCards = []
         selectedCards = []
-        
-        // Setup initial board
         deal(false)
     }
 }

@@ -1,6 +1,6 @@
 //
 //  MenuView.swift
-//  set
+//  shapelogic
 //
 //  Created by arishal on 11/27/24.
 //
@@ -84,16 +84,13 @@ struct CardExampleView: View {
                 .font(.subheadline)
                 .foregroundColor(example.isValid ? .primary : .red)
             
-            HStack(spacing: 0) {
+            HStack(spacing: 8) {
                 Spacer(minLength: 0)
-                HStack(spacing: 8) {
-                    ForEach(Array(example.cardViews.enumerated()), id: \.offset) { index, view in
-                        view
-                    }
+                ForEach(Array(example.cardViews.enumerated()), id: \.offset) { _, view in
+                    view
                 }
                 Spacer(minLength: 0)
             }
-           // .padding(.vertical, 8)
         }
     }
 }
@@ -109,9 +106,9 @@ struct GameRules {
 // Simplified rules sheet
 struct GameRulesSheet: View {
     let rules: GameRules
-    
+
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     ruleSection("Objective", content: rules.objective)
@@ -189,26 +186,6 @@ struct GameRulesets {
         objective: "Find all the sets.",
         setup: "The deck contains 243 (3⁵) cards. Each card has five features: shape (diamond, squiggle, or oval), color (red, green, or purple), fill (solid, shaded, or empty), number (one, two, or three), and border style (lined, dashed, or dotted). A set, similarly to Classic Set, is three cards where each feature is either all the same or all different. The board has 12 cards by default, more will be dealt automatically if there is no set.",
         examples: [
-            /*
-            // All same except number
-            .valid([
-                Set243Card(number: 0, shape: 1, color: 2, shading: 1, border: 1),
-                Set243Card(number: 1, shape: 1, color: 2, shading: 1, border: 1),
-                Set243Card(number: 2, shape: 1, color: 2, shading: 1, border: 1)
-            ]),
-            // All different
-            .valid([
-                Set243Card(number: 0, shape: 2, color: 1, shading: 1, border: 2),
-                Set243Card(number: 1, shape: 1, color: 2, shading: 0, border: 0),
-                Set243Card(number: 2, shape: 0, color: 0, shading: 2, border: 1)
-            ]),
-            // Invalid - mixed same/different for border
-            .invalid([
-                Set243Card(number: 1, shape: 2, color: 1, shading: 1, border: 1),
-                Set243Card(number: 1, shape: 2, color: 2, shading: 1, border: 1),
-                Set243Card(number: 1, shape: 2, color: 3, shading: 2, border: 0)
-            ], highlighting: [2])
-             */
             CardExample(
                 cards: [
                     Set243Card(number: 0, shape: 1, color: 2, shading: 1, border: 1),
@@ -308,30 +285,9 @@ struct GameRulesets {
                              Color(hex: "#7209b7")]
                 )
             }
-            /*
-            .valid([
-                ProjectiveCard(features: [true, true, true, false, false, false]),
-                ProjectiveCard(features: [true, false, false, true, true, false]),
-                ProjectiveCard(features: [false, true, true, true, true, false])
-            ]),
-            // Complex 5-card set
-            .valid([
-                ProjectiveCard(features: [true, true, true, true, true, true]),
-                ProjectiveCard(features: [false, true, false, false, false, true]),
-                ProjectiveCard(features: [true, true, true, true, false, true]),
-                ProjectiveCard(features: [false, true, true, false, true, false]),
-                ProjectiveCard(features: [false, false, true, false, false, true])
-            ]),
-            // Invalid - odd number of first dot
-            .invalid([
-                ProjectiveCard(features: [true, true, true, false, false, false]),
-                ProjectiveCard(features: [true, true, true, true, false, false]),
-                ProjectiveCard(features: [false, false, false, true, false, true])
-            ], highlighting: [2])
-             */
         ]
     )
-    
+
     static let fourStateSet = GameRules(
         title: "Four-State Set (𝔽₄³)",
         objective: "Find all the sets.",
@@ -428,68 +384,6 @@ struct GameMenuItem: View {
         }
     }
 }
-/*
-struct GameButton: View {
-    let title: String
-    let subtitle: String
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.title2.bold())
-                    .lineLimit(1)
-                Text(subtitle)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding()
-        }
-        .buttonStyle(.plain)
-    }
-} */
-
-struct GameButton: View {
-    let title: String
-    let subtitle: String
-    let rules: GameRules
-    let action: () -> Void
-    @State private var showingRules = false
-    
-    var body: some View {
-        HStack {
-            Button(action: action) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .font(.title2.bold())
-                    Text(subtitle)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            
-            Button {
-                showingRules = true
-            } label: {
-                Image(systemName: "info.circle")
-                    .imageScale(.large)
-                    .foregroundColor(.blue)
-            }
-        }
-        .padding()
-        .background(Color(uiColor: .systemGray6))
-        .cornerRadius(12)
-        .buttonStyle(.plain)
-        .sheet(isPresented: $showingRules) {
-            GameRulesSheet(rules: rules)
-        }
-    }
-}
-
 
 struct MenuView: View {
     @Binding var navigationPath: NavigationPath
